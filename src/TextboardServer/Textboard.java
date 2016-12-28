@@ -1,3 +1,5 @@
+package TextboardServer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -19,7 +21,7 @@ public class Textboard {
 		return messageList.size();
 	}
 
-	public List<Message> getByTime(long time) {
+	public Message[] getByTime(long time) {
 		List<Message> sublist = new ArrayList<>();
 		ListIterator<Message> messageIterator = messageList.listIterator();
 		readLock.lock();
@@ -30,14 +32,14 @@ public class Textboard {
 					sublist.add(candidate);
 			}
 			if (!sublist.isEmpty())
-				return sublist;
+				return sublist.toArray(new Message[0]);
 			return null;
 		} finally {
 			readLock.unlock();
 		}
 	}
 
-	public List<Message> getByTopic(String topic) {
+	public Message[] getByTopic(String topic) {
 		List<Message> sublist = new ArrayList<>();
 		ListIterator<Message> messageIterator = messageList.listIterator();
 		readLock.lock();
@@ -47,19 +49,20 @@ public class Textboard {
 				if (candidate.getTopic() == topic)
 					sublist.add(candidate);
 			}
-			if (!sublist.isEmpty())
-				return flip(sublist);
+			if (!sublist.isEmpty()) {
+				return flip(sublist).toArray(new Message[0]);	//Ausgabe der Liste in invertierter Reihenfolge
+			}
 			return null;
 		} finally {
 			readLock.unlock();
 		}
 	}
 
-	public List<Message> getLastEdited(int index) {
+	public Message[] getLastEdited(int index) {
 		if (index < 0) {
-			throw new IndexOutOfBoundsException();
+			throw new IndexOutOfBoundsException("Number must not be negative");
 		} else if (index == 0) {
-			return messageList;
+			return messageList.toArray(new Message[0]);
 		} else {
 			int from = 0;
 			int to = messageList.size() - 1;
@@ -68,7 +71,7 @@ public class Textboard {
 			}
 			readLock.lock();
 			try {
-				return flip(messageList.subList(from, to));
+				return flip(messageList.subList(from, to)).toArray(new Message[0]);	//Ausgabe der Liste in invertierter Reihenfolge
 			} finally {
 				readLock.unlock();
 			}
@@ -93,7 +96,7 @@ public class Textboard {
 	}
 
 	// Inside class
-	private class Message {
+	protected class Message {
 		private int numberOfLines;
 		private long time;
 		private String topic;
