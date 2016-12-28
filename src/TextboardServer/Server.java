@@ -6,12 +6,16 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import TextboardServer.Textboard.Message;
 
 public class Server {
 	ServerSocket serverSocket;
 	Textboard textboard;
 	boolean terminate = false;
+	
+	SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 	public Server(int port) {
 		terminate = false;
@@ -19,8 +23,11 @@ public class Server {
 
 		try {
 			serverSocket = new ServerSocket(port);
+			System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+					" Create server socket on port: " + port);
 		} catch (IOException e) {
-			System.out.println("Could not create server socket on port " + port + ". Quitting.");
+			System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+					" Could not create server socket on port: " + port);
 			System.exit(-1);
 		}
 
@@ -28,6 +35,8 @@ public class Server {
 			try {
 				Socket clientSocket = serverSocket.accept();
 				new HandleConnection(clientSocket, textboard).start();
+				System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+						" Connect to Client: " + clientSocket.getInetAddress());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -36,9 +45,11 @@ public class Server {
 
 		try {
 			serverSocket.close();
-			System.out.println("Server Stopped");
+			System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+					" Server Stopped");
 		} catch (Exception e) {
-			System.out.println("Error Found stopping server socket");
+			System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+					" Error Found stopping server socket");
 			System.exit(-1);
 		}
 	}
@@ -63,6 +74,8 @@ public class Server {
 		BufferedReader input = null;
 		PrintStream output = null;
 		boolean terminate = false;
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 		public HandleConnection(Socket socket, Textboard textboard) {
 			this.clientSocket = socket;
@@ -93,6 +106,8 @@ public class Server {
 				if (clientSocket != null && output != null && input != null) {
 					try {
 						String firstLine = input.readLine();
+						System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+								" " + firstLine);
 						String[] splitFirstLine = firstLine.split(" ");
 						String part1 = splitFirstLine[0];
 						String part2 = null;
@@ -101,8 +116,7 @@ public class Server {
 						}
 						long time = 0;
 						
-						switch (part1) {
-						case "W":
+						if (part1.equals("W")) {
 							try {
 								time = Long.parseLong(splitFirstLine[1]);
 							} catch (IllegalArgumentException e) {
@@ -120,7 +134,7 @@ public class Server {
 								output.println("Keine Nachrichten vorhanden");
 							}		
 							break;
-						case "P":
+						} else if (part1.equals("P")) {
 							String line = input.readLine();
 							int numberOfMessages = Integer.parseInt(line);
 
@@ -159,7 +173,7 @@ public class Server {
 								numberOfMessages--;
 							}
 							break;
-						case "T":
+						} else if (part1.equals("T")) {
 							Message[] sublistByTopic = textboard.getByTopic(part2);
 							if (sublistByTopic.length > 0) {
 								for(int i = 0; i < sublistByTopic.length; i++) {
@@ -171,7 +185,7 @@ public class Server {
 								output.println("Keine Nachrichten vorhanden");
 							}
 							break;
-						case "L":
+						} else if (part1.equals("L")) {
 							int index = 0;
 							try {
 								index = Integer.parseInt(part2);
@@ -194,11 +208,11 @@ public class Server {
 								output.println(e.getMessage());
 							}
 							break;
-						case "X":
+						} else if (part1.equals("X")) {
 							terminate();
-							break;
-						default:
-							output.println("Protokollfehler");
+						} else {
+							System.out.println(sdf.format(new Date(System.currentTimeMillis())) + "Protocol error. Coudn´t match command. ");
+							output.println("Protocol error");
 							terminate();
 						}
 					} catch (Exception e) {
