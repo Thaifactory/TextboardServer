@@ -21,7 +21,7 @@ public class Textboard {
 		return messageList.size();
 	}
 
-	public Message[] getByTime(long time) {
+	public List<Message> getByTime(long time) {
 		List<Message> sublist = new ArrayList<>();
 		ListIterator<Message> messageIterator = messageList.listIterator();
 		readLock.lock();
@@ -32,14 +32,14 @@ public class Textboard {
 					sublist.add(candidate);
 			}
 			if (!sublist.isEmpty())
-				return sublist.toArray(new Message[0]);
+				return sublist;
 			return null;
 		} finally {
 			readLock.unlock();
 		}
 	}
 
-	public Message[] getByTopic(String topic) {
+	public List<Message> getByTopic(String topic) {
 		List<Message> sublist = new ArrayList<>();
 		ListIterator<Message> messageIterator = messageList.listIterator();
 		readLock.lock();
@@ -50,7 +50,7 @@ public class Textboard {
 					sublist.add(candidate);
 			}
 			if (!sublist.isEmpty()) {
-				return flip(sublist).toArray(new Message[0]);	//Ausgabe der Liste in invertierter Reihenfolge
+				return flip(sublist);	//Ausgabe der Liste in invertierter Reihenfolge
 			}
 			return null;
 		} finally {
@@ -58,20 +58,17 @@ public class Textboard {
 		}
 	}
 
-	public Message[] getLastEdited(int index) {
-		if (index < 0) {
-			throw new IndexOutOfBoundsException("Number must not be negative");
-		} else if (index == 0) {
-			return messageList.toArray(new Message[0]);
+	public List<Message> getLastEdited(int index) {
+		if (index <= 0) {
+			throw new IndexOutOfBoundsException("Number must not be negative or bigger then 0");
+		} else if (index >= messageList.size()) {
+			return messageList;
 		} else {
-			int from = 0;
-			int to = messageList.size() - 1;
-			if (index <= messageList.size()) {
-				from = to - index;
-			}
+			int to = messageList.size();
+			int from = to - index;
 			readLock.lock();
 			try {
-				return flip(messageList.subList(from, to)).toArray(new Message[0]);	//Ausgabe der Liste in invertierter Reihenfolge
+				return flip(messageList.subList(from, to));	//Ausgabe der Liste in invertierter Reihenfolge
 			} finally {
 				readLock.unlock();
 			}
@@ -95,7 +92,11 @@ public class Textboard {
 		return flippedList;
 	}
 
-	// Inside class
+	/**
+	 * Message Object
+	 * @author micha
+	 *
+	 */
 	protected class Message {
 		private int numberOfLines;
 		private long time;
@@ -130,9 +131,10 @@ public class Textboard {
 		}
 		
 		private int countLines(String message) {
-			int count = 0;
+			int count = 1;
 			Scanner scanner = new Scanner(message);
-			while(scanner.nextLine() != null) {
+			while(scanner.hasNextLine()) {
+				scanner.nextLine();
 				count++;
 			}
 			scanner.close();
