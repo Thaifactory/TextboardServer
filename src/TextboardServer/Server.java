@@ -154,6 +154,7 @@ public class Server {
 						} else if (part1.equals("P")) {
 							String line = input.readLine();
 							int numberOfMessages = 0;
+							
 							try {
 								numberOfMessages = Integer.parseInt(line);
 							} catch (NumberFormatException e) {
@@ -167,6 +168,7 @@ public class Server {
 							while (numberOfMessages > 0) {
 								line = input.readLine(); // <Zeilenanzahl> auslesen
 								int length = 0;
+								
 								try {
 									length = Integer.parseInt(line) - 1; // <Zeilenanzahl> parsen
 								} catch (NumberFormatException e) {
@@ -176,20 +178,12 @@ public class Server {
 									output.println("E <Couldn`t parse the count of lines>");
 									break;
 								}
+								
 								line = input.readLine(); // <Zeitpunkt> und <Thema> auslesen
 								String[] splitLine = line.split(" "); // und die Zeile splitten
-								
-								try {
-									time = Long.parseLong(splitLine[0]);	// <Zeitpunkt> parsen
-								} catch (NumberFormatException e) {
-									System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
-											" " + name +
-											":  Couldn`t parse the time for message");
-									output.println("E <Couldn`t parse the time for message>");
-									break;
-								}
-								
+								time = System.currentTimeMillis();
 								String topic = "";
+								
 								if (splitLine.length > 1) {
 									for (int i = 1; i < splitLine.length; i++) { // <Tehma> zusammenfuegen
 										topic += " " + splitLine[i];
@@ -211,6 +205,7 @@ public class Server {
 									}
 									length--;
 								}
+								
 								textboard.add(time, topic, message);
 								numberOfMessages--;
 							}
