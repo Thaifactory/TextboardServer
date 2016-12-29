@@ -255,10 +255,10 @@ public class Server {
 									": Protocol error. Couldn't match command");
 							output.println("E <Protocol error. Couldn't match command>");
 						}
-						terminate();
+						//terminate();
 					} catch (IOException e) {
 						output.println("E <" + e.getMessage() + ">");
-						terminate();
+						//terminate();
 					}
 					
 				} else {
