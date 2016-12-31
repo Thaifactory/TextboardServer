@@ -3,12 +3,14 @@ package TextboardServer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Observable;
 import java.util.Scanner;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class Textboard {
+public class Textboard extends Observable{
 	private List<Message> messageList = null;
+	private int counterNewMessages = 0;
 	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 	private final Lock readLock = lock.readLock();
 	private final Lock writeLock = lock.writeLock();
@@ -19,6 +21,15 @@ public class Textboard {
 
 	public int getSize() {
 		return messageList.size();
+	}
+
+	public int getCounterNewMessages(){
+		return counterNewMessages;
+	}
+
+	public void createChangeOfObserver(int count){
+		this.setChanged();
+		this.counterNewMessages = count;
 	}
 
 	public List<Message> getByTime(long time) {
@@ -83,13 +94,32 @@ public class Textboard {
 			writeLock.unlock();
 		}
 	}
-	
+
 	private List<Message> flip(List<Message> list) {
 		List<Message> flippedList = new ArrayList<>();
 		for (int i = list.size() - 1; i >= 0; i--) {
 			flippedList.add(list.get(i));
 		}
 		return flippedList;
+	}
+
+	public ArrayList<Message> lastMessages(){
+
+		int count = counterNewMessages;
+		ArrayList<Message> returnList = new ArrayList<Message>();
+		int lowerIndex = this.messageList.size() - counterNewMessages;
+		int upperIndex = this.messageList.size() - 1;
+
+		if(lowerIndex >= 0 && lowerIndex <= upperIndex){
+			for(int i = lowerIndex; i <= upperIndex; i++){
+				returnList.add(this.messageList.get(i));
+			}
+		} else {
+			returnList.add(new Message(0, "E", "Error by getting the last few messages."));
+		}
+
+
+		return returnList;
 	}
 
 	/**
@@ -113,7 +143,7 @@ public class Textboard {
 		public String toString() {
 			return (numberOfLines + "\n" + time + " " + topic + "\n" + message);
 		}
-		
+
 		public int getNumberOfLines() {
 			return numberOfLines;
 		}
@@ -129,7 +159,7 @@ public class Textboard {
 		public String getMessage() {
 			return message;
 		}
-		
+
 		private int countLines(String message) {
 			int count = 1;
 			Scanner scanner = new Scanner(message);

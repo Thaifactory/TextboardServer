@@ -8,7 +8,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import TextboardServer.Textboard.Message;
 
@@ -17,7 +20,7 @@ public class Server {
 	Textboard textboard;
 	boolean terminate = false;
 	int countClients = 1;
-	
+
 	SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 	public Server(int port) {
@@ -26,23 +29,23 @@ public class Server {
 
 		try {
 			serverSocket = new ServerSocket(port);
-			System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+			System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 					" Create server socket on port: " + port);
 		} catch (IOException e) {
-			System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+			System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 					" Could not create server socket on port: " + port);
 			System.exit(-1);
 		}
-		
+
 		textboard.add(1, "Test", "Testnachricht");
 
 		while (!terminate) {
 			try {
 				Socket clientSocket = serverSocket.accept();
 				new HandleConnection(clientSocket, textboard, ("Client " + countClients++)).start();
-				System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+				System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 						" Connect to Client: " + clientSocket.getInetAddress());
-				System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+				System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 						" Number of Messages: " + textboard.getSize());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -52,10 +55,10 @@ public class Server {
 
 		try {
 			serverSocket.close();
-			System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+			System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 					" Server Stopped");
 		} catch (Exception e) {
-			System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+			System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 					" Error Found stopping server socket");
 			System.exit(-1);
 		}
@@ -80,14 +83,14 @@ public class Server {
 	 * @author micha
 	 *
 	 */
-	private class HandleConnection extends Thread {
+	private class HandleConnection extends Thread implements Observer {
 		Textboard textboard;
 		String name = null;
 		Socket clientSocket = null;
 		BufferedReader input = null;
 		PrintStream output = null;
 		boolean terminate = false;
-		
+
 		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");	// Date-Format fuer Zeitstempel
 
 		public HandleConnection(Socket socket, Textboard textboard, String name) {
@@ -98,10 +101,11 @@ public class Server {
 				this.input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 				this.output = new PrintStream(clientSocket.getOutputStream(), true);
 			} catch (IOException e) {
-				System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+				System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 						" " + name +
 						": Couldn`t create an Input- or Outputstream");
 			}
+			this.textboard.addObserver(this);
 		}
 
 		public void terminate() {
@@ -124,7 +128,7 @@ public class Server {
 				if (clientSocket != null && output != null && input != null) {
 					try {
 						String firstLine = input.readLine();
-						System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+						System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 								" " + name +
 								": " + firstLine);
 						String[] splitFirstLine = firstLine.split(" ");
@@ -149,53 +153,55 @@ public class Server {
 								}
 							} else {
 								output.println(0);
-							}		
+							}
 // Command <P>
 						} else if (part1.equals("P")) {
 							String line = input.readLine();
 							int numberOfMessages = 0;
-							
+
 							try {
 								numberOfMessages = Integer.parseInt(line);
 							} catch (NumberFormatException e) {
-								System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+								System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 										" " + name +
 										": Couldn`t parse the number of messages");
 								output.println("E <Couldn`t parse the count of messages>");
 								break;
 							}
-							
+
+							int allNewMessages = numberOfMessages;
+
 							while (numberOfMessages > 0) {
 								line = input.readLine(); // <Zeilenanzahl> auslesen
 								int length = 0;
-								
+
 								try {
 									length = Integer.parseInt(line) - 1; // <Zeilenanzahl> parsen
 								} catch (NumberFormatException e) {
-									System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+									System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 											" " + name +
 											": Couldn`t parse the count of lines");
 									output.println("E <Couldn`t parse the count of lines>");
 									break;
 								}
-								
+
 								line = input.readLine(); // <Zeitpunkt> und <Thema> auslesen
 								String[] splitLine = line.split(" "); // und die Zeile splitten
 								time = System.currentTimeMillis();
 								String topic = "";
-								
+
 								if (splitLine.length > 1) {
 									for (int i = 1; i < splitLine.length; i++) { // <Tehma> zusammenfuegen
 										topic += " " + splitLine[i];
 									}
 								} else {
-									System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+									System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 											" " + name +
 											":  Couldn`t parse the topic for message");
 									output.println("E <Couldn`t parse the topic for message>");
 									break;
 								}
-								
+
 								String message = "";
 								while (length != 0) {
 									if (message.isEmpty()) {
@@ -205,10 +211,15 @@ public class Server {
 									}
 									length--;
 								}
-								
+
 								textboard.add(time, topic, message);
+
 								numberOfMessages--;
 							}
+
+							textboard.createChangeOfObserver(allNewMessages);
+							textboard.notifyObservers();
+
 // Command <T>
 						} else if (part1.equals("T")) {
 							List<Message> sublistByTopic = textboard.getByTopic(part2);
@@ -226,7 +237,7 @@ public class Server {
 							try {
 								index = Integer.parseInt(part2);
 							} catch (NumberFormatException e) {
-								System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+								System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 										" " + name +
 										":  Couldn`t parse the index for sublistByCount");
 								output.println("E <Couldn`t parse the index for sublistByCount>");
@@ -250,7 +261,7 @@ public class Server {
 						} else if (part1.equals("X")) {
 							terminate();
 						} else {
-							System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
+							System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 									" " + name +
 									": Protocol error. Couldn't match command");
 							output.println("E <Protocol error. Couldn't match command>");
@@ -260,14 +271,33 @@ public class Server {
 						output.println("E <" + e.getMessage() + ">");
 						//terminate();
 					}
-					
+
 				} else {
-					System.out.println(sdf.format(new Date(System.currentTimeMillis())) + 
-							" " + name + 
+					System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
+							" " + name +
 							": Connection lost");
 					terminate();
 				}
 			}
+		}
+
+		@Override
+		public void update(Observable o, Object arg) {
+
+			int countUpdatedMessages = textboard.getCounterNewMessages();
+			ArrayList<Message> newMessages = textboard.lastMessages();
+
+			//Number of messages
+			String returnMessage = "N " + countUpdatedMessages + "\n";
+
+			//time and topic from each message
+			for(int i = (newMessages.size()-1); i >= 0; i--){
+				returnMessage = returnMessage +
+								newMessages.get(i).getTime() + " " +
+								newMessages.get(i).getTopic() + "\n";
+			}
+
+			this.output.println(returnMessage);
 		}
 	}
 }
