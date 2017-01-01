@@ -1,12 +1,12 @@
 Um den Server zu starten, muss in der Konsole in den Programmieraufgaben-Ordner navigiert werden.
-Dort muss dann das jar-Archiv (Server.jar) mit dem Befehl: java Server.jar ausgeführt werden.
+Dort muss dann das jar-Archiv (Server.jar) mit dem Befehl: java -jar Server.jar ausgeführt werden.
 Daraufhin läuft der Server mit der IP-Adresse des Computers und kommuniziert über die Port-Nummer 3141.
 Wenn eine andere Port-Nummer verwendet werden soll, muss diese bei dem Befehl hintenangehängt werden.
-Bsp.: java Server.jar 2345
+Bsp.: java -jar Server.jar 2345
 Die Konsole zeigt anschließend alle Ausgaben des Servers.
 
 Um den Client zu starten, muss in der Konsole in den Programmieraufgaben-Ordner navigiert werden.
-Dort muss dann das jar-Archiv (Client.jar) mit dem Befehl: java Client.jar ausgeführt werden.
+Dort muss dann das jar-Archiv (Client.jar) mit dem Befehl: java -jar Client.jar ausgeführt werden.
 Anschließend öffnet sich ein Applikationsfenster, welches einen Client darstellt.
 
 Um nun eine Verbindung zu einem Server aufzubauen, muss man die entsprechende IP-Adresse und
