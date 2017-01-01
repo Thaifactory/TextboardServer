@@ -166,10 +166,10 @@ public class Server {
 							try {
 								time = Long.parseLong(splitFirstLine[1]); // Try to parse the time
 							} catch (NumberFormatException e) {
-								output.println("E <" + e.getMessage() + ">");
+								output.println("E " + e.getMessage());
 							}
 							List<Message> sublistByTime = textboard.getByTime(time); // Sublist of messages by time
-							if (sublistByTime.size() > 0) {
+							if (sublistByTime != null) {
 								output.println(sublistByTime.size());
 								for(int i = 0; i < sublistByTime.size(); i++) {
 									output.println(sublistByTime.get(i).toString()); // Send the messages to the client
@@ -212,7 +212,8 @@ public class Server {
 								String topic = "";
 
 								if (splitLine.length > 1) {
-									for (int i = 1; i < splitLine.length; i++) { // Merge the topic
+									topic = splitLine[1];
+									for (int i = 2; i < splitLine.length; i++) { // Merge the topic
 										topic += " " + splitLine[i];
 									}
 								} else {
@@ -243,7 +244,7 @@ public class Server {
 // Command <T>
 						} else if (part1.equals("T")) {
 							List<Message> sublistByTopic = textboard.getByTopic(part2); 	// Sublist of messages by topic
-							if (sublistByTopic.size() > 0) {
+							if (sublistByTopic != null) {
 								output.println(sublistByTopic.size());
 								for(int i = 0; i < sublistByTopic.size(); i++) {
 									output.println(sublistByTopic.get(i).toString());	// Send the message to client

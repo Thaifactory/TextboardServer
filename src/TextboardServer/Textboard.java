@@ -67,7 +67,7 @@ public class Textboard extends Observable{
 		try {
 			while (messageIterator.hasNext()) {
 				Message candidate = messageIterator.next();
-				if (candidate.getTopic() == topic)
+				if (candidate.getTopic().equals(topic))
 					sublist.add(candidate);
 			}
 			if (!sublist.isEmpty()) {
