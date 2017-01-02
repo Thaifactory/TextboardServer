@@ -118,6 +118,7 @@ public class Server {
 				System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
 						" " + getName() + ": Couldn`t create an Input- or Outputstream");
 			}
+			output.println("Wellcome. You're the " + getName());
 			this.textboard.addObserver(this); // Add this Thread as an Observer for handling new messages
 		}
 
@@ -278,6 +279,7 @@ public class Server {
 							}
 // Command <X>
 						} else if (part1.equals("X")) {
+							output.println("Server close this Socket. Please disconnect communication!");
 							terminate();
 						} else {
 							System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
