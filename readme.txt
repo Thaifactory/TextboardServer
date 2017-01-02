@@ -7,7 +7,7 @@ Wenn eine andere Port-Nummer verwendet werden soll, muss diese bei dem Befehl hi
 Bsp.: java -jar Server.jar 2345
 Die Konsole zeigt anschließend alle Ausgaben des Servers.
 
-Alternativ kann der Server über die beiliegende Server.jar Datei gestartet werden. 
+Alternativ kann der Server durch öffnen der beiliegende Server.jar Datei gestartet werden. 
 
 
 C L I E N T:
@@ -25,4 +25,4 @@ Wenn die Verbindung hergestellt ist, kann man in das untere große Textfeld die N
 die zu dem Server geschickt werden sollen.
 Diese Nachrichten müssen auf dem in der Programmieraufgabe vorgegebenen Protokoll basieren.
 
-Alternativ kann der Client über die beiliegende Client.jar Datei gestartet werden.
+Alternativ kann der Client durch öffnen der beiliegende Client.jar Datei gestartet werden.
