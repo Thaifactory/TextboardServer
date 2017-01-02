@@ -279,7 +279,7 @@ public class Server {
 							}
 // Command <X>
 						} else if (part1.equals("X")) {
-							output.println("Server close this Socket. Please disconnect communication!");
+							output.println("Server close this Socket.");
 							terminate();
 						} else {
 							System.out.println(sdf.format(new Date(System.currentTimeMillis())) +
